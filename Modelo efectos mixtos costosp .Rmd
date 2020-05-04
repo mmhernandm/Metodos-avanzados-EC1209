@@ -1,0 +1,1549 @@
+---
+title: "      Metodos Estadisticos Avanzados  
+            María Margarita Hernández Montoya"
+             
+Theme: tactile
+Author: "Maria Margarita Hernandez Montoya"
+date:   "3 /mayo/2020"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+prettydoc: html_document
+---
+
+#1. Objetivo
+
+Caracterizar las relaciones entre algunos indicadores macroeconómicos y los costos de ventas de un grupo de empresas colombianas vigiladas por la SuperSociedades y que tengan con actividades económicas similares según la clasificación internacional CIIU.
+
+#2. Definición del problema
+
+Aplicando modelos lineales, se debe caracterizar la relación entre los costos de ventas como variable dependiente con los indicadores macroeconómicos: PIB, Inflación, Desempleo, TRM, Balance Fiscal, Balance en Cuenta Corriente como regresores.  Para este fin se elige trabajar con los datos de las empresas que figuran bajo la clasificación Industrial Internacional de empresas de consultoría  servicios informáticos.Los códigos CIIU elegidos son:
+
+  * J6201 - Actividades de desarrollo de sistemas informáticos (planificación, análisis, diseño, programación,
+     pruebas)
+  * J6202 - Actividades de consultoría informática y actividades de administración de instalaciones informáticas
+  * J6209 - Otras actividades de tecnologías de información y actividades de servicios informáticos
+  * J6311 - Procesamiento de datos, alojamiento (hosting) y actividades relacionadas
+
+Se  extrajeron datos de la plataforma de la Superintendencia de Sociedades entre 2012 y 2018. Es de anotar que la obligatoriedad de acoger las NIIF empezó en el 2015, sin embargo, los ingresos operacionales y el costo de ventas no tiene tanta afectación por las NIIF como otros rubros del balance contable. Adicionalmente, se hicieron extensas pruebas con datasets desde 2015 -2018  balanceados y desbalanceados y no se consiguieron buenos modelos por lo cual
+fue necesario conseguir mas datos para intentar mejorar el ajuste.
+De acuerdo con lo anterior se incluyeron en la muestra las empresas de la clasificación ya mencionada pero con 6 o 7
+datos en el periodo 2012-2018.
+
+#3. Construcción de la Base de datos
+
+#3.1 Extracción de los datos de las empresas [7]
+
+Se ingresa a la página de consultas masivas de la Supersociedades por la url http://pie.supersociedades.gov.co/Pages/default.aspx#/ , se entra al menú lateral que lleva a 
+la descarga masiva de datos financieros NIIF.
+
+Se descargaron los archivos comprimidos de 2012, 2018.  No hay mas datos porque los de 2019 todavía no se han cargado por parte de las empresas y la Supersociedades amplió los plazos debido al COVID..
+
+#3.1.1 Procesamiento de 2012-2014
+
+Se descarga un archivo comprimido.Al revisar su estructra interna se encuentra que está formado por un archivo txt para cada estado financiero.
+Se extrae el archivo de estado de resultados integrales ERI, denominado EstadoResultadosIntegrales(ERI)XXXX.txt.
+La estructura tiene los datos de identificación de las empresas en el mismo archivo txt que las columnas de lo estados financieros, se abre en excel y es texto delimitado sin tabuladores así que se descarga sin inconvenientes.  Para extraer la información se ejecutaron los siguientes pasos en Excel:
+
+  *	Seleccionar los registros de los CIIU J6201, J6202,J6209, J6311
+  *	Quitar registros que no sean de cierre
+  * Eliminar duplicados por retransmisiones dejando el ultimo
+  * Se sacan los registros sin costos de ventas o sin valor de ingresos operacionales, es de anotar que las columnas
+    en estos archivos no se nombran como en los archivos a partir de 2015, por ejemplo: mas ingresos operacionales en     lugar de ingresos. Se seleccionaron ingresos y costos de ventas.
+  *	Llevar los datos a la tabla consolidada
+
+#3.1.2 Procesamiento de 2015 
+
+Se descarga un archivo comprimido de nombre InfoFinanciera_2015_1000_Anexos.zip. 
+Al revisar su estructra interna se encuentra que está formado por un archivo txt para cada estado financiero.
+Se extrae el archivo de estado de resultados integrales ERI, denominado EstadoResultadosIntegrales(ERI)XXXX.txt.
+La estructura tiene los datos de identificación de las empresas en el mismo archivo txt que las columnas de lo estados financieros, se abre en excel y es texto delimitado sin tabuladores así que se descarga sin inconvenientes.  Para extraer la información se ejecutaron los siguientes pasos en Excel:
+
+  *	Seleccionar los registros de los CIIU J6201, J6202,J6209, J6311
+  *	Quitar registros que no sean de cierre
+  * Eliminar duplicados por retransmisiones dejando el ultimo
+  * Quitar los registros sin costos de ventas o que no tengan ingresos operacionales
+  *	Llevar los datos a la tabla consolidada
+
+#3.1.3 Procesamiento de 2016  
+Se descarga el archivo comprimido de nombre InfoFinanciera_2016_1000_Anexos.zip. En su estructura interna se encuentra que está formado por los mismos campos del 2015, lo que facilita la consolidación. Al revisar su estructura interna se encuentra que está formado por un archivo txt para cada estado financiero.
+Se extrae el archivo de estado de resultados integrales ERI, denominado EstadoResultadosIntegrales(ERI)2016.txt. Para extraer la información se ejecutaron los siguientes pasos :
+
+  * Se abre el archivo txt en excel y se elige datos delimitados caracter ¬ , luego de esto abre correctamente.
+  * Seleccionar los registros de los CIIU J6201, J6202,J6209, J6311
+  * El código del CIIU es sólo un código no tiene concatenada la descripción
+  * No tiene registros que no sea de cierre
+  * No tiene duplicados por retransmision
+  * El orden de las columnas requeridas corresponde al de 2015, se consolidan sin inconvenientes
+  * Finalmente se revisa que no haya duplicados y se quitan los registros con costos de ventas vacíos.
+  * Llevarlos a la tabla consolidada, 
+  
+#3.1.4 Procesamiento de 2017 
+
+Se descarga el archivo comprimido de nombre InfoFinanciera_2017_1000_Anexos.zip.  Al descomprimirlo se encuentran cuatro archivos de excel de los cuales se elige el de  NIIF plenas individuales que corresponde a los estados financieros puros de cada empresa. Este excel tiene varias hojas de cálculo y cada una de ellas es un estado financiero. Estas hojas tienen los valores y campos clave como el NIT y las fechas de corte, adicionalmente hay ua hoja denominada caratula que tiene los datos maestros de la empresa como la razón social, NIT, dirección, CIIU y muchos otros mas.
+
+Se tomaron los datos de la hoja Estado de resultados integrales y la hoja caratula para hacer un join con
+la hoja de datos contables para ponerle a cada registro contable el CIIU, la razón social y el departamento, con el fin de hacer algunos análisis exploratorios. 
+El 2017 tiene muchos mas atributos en el maestro de empresas que 2015 y 2016 así que sólo se toman los campos comunes a todos los años.
+
+Para extraer la información se ejecutaron los siguientes pasos en excel:
+
+  * Seleccionar los registros de los CIIU J6201, J6202,J6209, J6311. Para esto se seleccionan las empresas 
+    en la hoja caratula, se borran los registrs que no son de interés y se hace una fórmula para llevar a los
+    registros contables de la hoja de estado de resultados integrales el CIIU y el departamento.
+  * Se borran todos los registros sin CIIU
+  * La Clasificación Industrial Internacional Uniforme Versión 4 A.C tiene en el código y la descripción
+    contatenados , se separan y se deja sólo el código para que coincida con 2015 y 2016
+  * No tiene registros que no sean de cierre
+  * Trae año actual año anterior se deja sólo 2017 porque ya se tiene el 2016
+  * Luego se revisa nuevamente que no haya registros duplicados
+  * No hay retransmisiones para las empresas seleccionadas
+  * Se llevan los datos a  la tabla consolidada cuidando el orden de las columnas seleccionadas
+  * Se quitan los registros con costos de ventas o ingresos vacíos
+  
+
+#3.1.5 Procesamiento de 2018
+Se descarga el archivo comprimido de nombre InfoFinanciera_2018_1000_Anexos.zip. El archivo tiene la misma estructura de 2017 , cambian algunas columnas de los estados financieros pero no afecta el costo de ventas. El procedimiento es muy similar al del 2017.
+Para extraer la información se ejecutaron los siguientes pasos en excel:
+
+  * Seleccionar los registros de los CIIU J6201, J6202,J6209, J6311. Para esto se seleccionan las empresas   
+    en la hoja caratula, se borran los registros que no son de interés y se hace una fórmula para llevar 
+    los registros contables de la hoja de estado de resultados integrales, el CIIU y el departamento.
+  * Se borran todos los registros sin CIIU
+  * La Clasificación Industrial Internacional Uniforme Versión 4 A.C tiene en el código y la descripción
+    contatenados , se separan y se deja sólo el código para que coincida con 2015 y 2016
+  * No tiene registros que no sean de cierre
+  * Trae año actual año anterior se deja sólo 2018 porque ya se tiene el 2017
+  * Luego se revisa nuevamente que no haya registros duplicados
+  * No hay retransmisiones para las empresas seleccionadas
+  * Se llevan los datos a  la tabla consolidada cuidando el orden de las columnas de interés
+  * Se quitan los registros con costos de ventas vacíos y con ingresos vacios.
+
+Ya en el archivo consolidado final, se eliminan las columnas de datos financieros que nos son de interés.
+Adicionalmente se incluyen todas las empresas que tienen los 7 datos completos y una que tiene 6, esencialmente porque
+se sabe que opera hasta el momento. Había unas cuantas empresas con sólo 4 datos y se excluyeron.
+
+En este archivo consolidado se hicieron las siguientes operaciones de preparación de datos: 
+  * Se homologaron los CIIU a los de la versión actual y las empresas que habian pasado por varios
+    códigos se dejaron en el dataset con el último reportado según la versión 4 del estándar que usa la      
+    supersociedades.
+    
+  * Se crearon dos nuevas variables, una para reemplazar el nit ya que es muy largo y las gráficas quedan 
+    poco claras
+  * Se creó otra variable para una nueva subclasificación del ciiu que crea dos clases: la de las empresas 
+    consultoras y la de infraestructura y otros.
+  * Se homologaron las descripciones de los departamentos porque realmente era una mezcla quedaron Medellín y
+    Bogotá.
+    
+Es importante anotar que la división de ciiu no es muy esticta porque se clasifican las empresas por su actividad
+principal pero pueden incursionar en otros tipos en menor medida.
+
+#3.2 Extracción de los datos de indicadores Macroeconómicos de Colombia
+
+La búsqueda de los indicadores Macroeconomicos fue desgastante al principio porque en general las páginas tienen muchos enlaces a datos viejos o  a veces no es muy clara la moneda o exactamente a qué se refieren las diferentes variedades del indicador y no se conocía la página de los boletines del Banrep.  Adicionalmente, se tenían al inicio los indicadores de 2015 al 2018 y al ampliar la muestra hasta el 2012 fue necesario también complementar estos años.
+
+  * Variación del PIB 
+  Inicialmente se hicieron pruebas con el PIB como miles de millones de pesos a pesos constantes de 2015 pero la variable no entró
+  a ningún modelo entonces se cambia por la variación del pib.
+  Los datos fueron tomados del boletin del Banrep que apareció el 13 de abril de 2020 [1].
+   
+  * TRM
+  De todos los indicadores requeridos fué el mas fácil de encontrar, se tomaron las series del Banrep[1][3] y 
+  Se trabajaron en excel para extraer la TRM mínima, máxima y de cierre de cada Ejercicio contable.
+  
+  * Inflación
+  Para medir la inflación se estima un índice de precios que busca capturar el promedio general de precios
+  en una economía por periodos de tiempo. El cambio porcentual entre dos periodos es una medida aproximada 
+  de inflación. Se obtuvieron datos de fuentes diversas pero al final se encontró el boletín del Banrep [1] y 
+  de ahí se dejaron los datos definitivos. En el dataset se usa como proporción no como porcentaje.
+  
+  * Tasa de intervención
+  Se lleva al dataset como proporción no como porcentaje.
+  Se denomina tasa de intervención de política monetaria del Banco de la República a la tasa mínima de las
+  subastas de expansión monetaria a un día. Las decisiones de modificación de esta tasa de intervención
+  tienen usualmente vigencia a partir del día hábil siguiente a la sesión de la Junta Directiva del Banrep.
+  Se tomaron los valores del Banco de la República [1].
+  
+  * Desempleo
+   Se lleva al dataset como proporción no como porcentaje. 
+  La Tasa de Desempleo se calcula como el número de personas desocupadas dividido la Población Económicamente
+  Activa (PEA), siendo esta la población o en edad de trabajar que en el período de referencia o bien tienen
+  una ocupación en la que producen bienes o servicios económicos (Ocupados) o bien sin tenerla la buscan.
+  Los datos finales se tomaron del boletín del Banrep[1] .
+
+  * Balance cuenta corriente
+  La balanza de pagos de Colombia registra los flujos reales y financieros que el país intercambia con el resto de las economías del mundo, de acuerdo con el Manual de Balanza de Pagos y Posición de Inversión Internacional del FMI, versión 6. Presenta dos grandes cuentas: la cuenta corriente y la cuenta financiera. La cuenta corriente contabiliza las exportaciones e importaciones de bienes y servicios, los ingresos y egresos por renta de los factores (ingreso primario) y por transferencias corrientes (ingreso secundario). Normalmente este balance se expresa como fracción del PIB , lo que hace un poco difícil encontrarlo expresado como valor en pesos o dólares.
+Los datos se tomaron del Banrep y están en miles de millones de dólares [1].
+  
+  * Balance fiscal
+  El término balanza fiscal se define como un instrumento de información que calcula territorialmente los ingresos y los gastos de las instituciones públicas. Dicho de otra forma, una balanza fiscal son los datos que obtenemos al restar los ingresos y los gastos públicos.
+Este dato fue bastante difícil de encontrar al inicio porque siempre se expresa en como porcentaje del PIB,los valores del dataset se tomaron del boletin del Banrep[1].
+  
+  
+Puede decirse que encontrar estos datos de variables macroecoómicas tomó mas tiempo que preparar los datos de costos pero por fortuna el 13 de abril el Banco de la República entregó un boletín con una gran cantidad de indicadores de varios años[1] y muy ordenados.
+
+Adicional, puede decirse que no se encontraron reportes facilmente consumibles en el ministerio de Hacienda y ni en el Dane, las formas como se nombran son algo confusas y las herramientas como se exponen al investigador son muy pobres.
+
+Una vez listos, se asignaron lo indicadores macroeconómicos a los datos de costos de ventas usando como clave de unión el ejercicio contable ya que todos los datos están anualizados  y se declaran a 31 de diciembre de cada ejercicio.
+
+Es de anotar que algunas cifras venian con decimal punto y separador de miles coma y fue necesario convertirlas al estándar del excel local porque al cargarlas a R en la importación se dañaban los datos. Quedó decimal con coma y sin separadores de miles.
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(lme4)
+library(readxl)
+library(ggplot2)
+library(lattice)
+library(nlme)
+
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+{
+    usr <- par("usr"); on.exit(par(usr))
+    if(par("xlog")){x<-log(x)}
+    if(par("ylog")){y<-log(y)}
+    par(usr = c(0, 1, 0, 1))
+    r <- abs(cor(x, y,use="na.or.complete"))
+    txt <- format(c(r, 0.123456789), digits = digits)[1]
+    txt <- paste0(prefix, txt)
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    pos_x<-ifelse(par("xlog"),4,0.5)
+    pos_y<-ifelse(par("ylog"),4,0.5)
+    text(pos_x,pos_y, txt, cex = cex.cor * r)
+}
+
+```
+
+#Lectura del Dataset 
+
+```{r}
+#Dataset incluyendo sólo los nit que tienen 7 registros
+#(correspondientes a los años 2012 - 2018)
+
+
+dat_cosv4 <- read_excel("Dataset costo ventas4e.xlsx", 
+     col_types = c("text", "text", "text", 
+          "numeric","text", "text", "numeric",
+          "date", "numeric", "numeric","numeric", 
+          "text","numeric", "numeric", "numeric", 
+          "numeric", "numeric","numeric","numeric"))
+                                               
+```
+
+```{r}
+# Se definen los factores del dataset se usarán en gráficas mas adelante
+
+fnit<-factor(dat_cosv4$nit,levels=c("1","2","3","4","5","6","7","8","9","10","11",
+                        "12","13","14", "15","16","17", "18","19","20","21"),
+             labels=c("1","2","3","4","5","6","7","8","9","10","11","12","13",
+                      "14","15","16","17","18","19","20","21")) 
+
+fciiu <-factor(dat_cosv4$ciiu,levels=c("J6201","J6202","J8209","J6311"),
+    labels=c("Desarro","Consul","Softwa","Infraes")) 
+
+fciiub <-factor(dat_cosv4$ciiub,levels=c("CONSUL","INFROTROS"),
+    labels=c("Consultor","Inf-Dev-sw")) 
+
+ftime <- rep(dat_cosv4$periodo,  7)
+
+```
+
+#4. Exploración de los datos
+
+
+#4.1 Columnas del dataset cargado y número de registros
+
+```{r results="hide"}
+data(dat_cosv4)
+dim(dat_cosv4)
+colnames(dat_cosv4)
+
+
+```
+Hay 146 registros en total cada uno con 15 campos.
+
+
+#4.2 Número de empresas de la muestra:
+```{r}
+#Numero de empresas en el dataset total
+print(" Número de empresas de la muestra:")
+length(unique(dat_cosv4$nit))
+```
+
+#4.3 Análisis del balanceo de los datos
+
+Se tienen 20 nits con registros completos de 7 años y uno con 6 años, puede decirse que está muy balanceada en cuanto a nits ya que
+serán el sujetos de principal interés. 
+Adicionalmente, se tienen otros dos factores que caracterizan la muestra como el departamento donde se localiza la
+casa matriz y  la clasificación industril internacional .A continuación se ilustra el balance de la muestra rspecto a estos factores:
+
+```{r}
+contador=aggregate(periodo~nit,data=dat_cosv4, FUN = length )
+histogram(contador$periodo, main="Registros por NIT", xlab="cant. registros")
+```
+
+Se buscó completar una muestra con la mayor cantidad posible de regitros, entonces se excluyeron los nits con menos de 6 registros de estados financieros entre 2012-2018.  
+Esta exclusión busca disminuir que entren nuevos NITs pero pocos registros y así evitar fallas al calcular el número de efectos de los modelos por tener muchos efectos y pocos datos.
+
+Al fijar el número de nits y de registros por nits, la muestra también quedará balanceada en datos por año.
+
+
+En cuanto al tipo de empresas que se analizará, se recuerda que las tipologías son:
+
+* Sección         División
+
+     J            58-63 Información y comunicaciones
+     J            62 PROGRAMACIÓN INFORMÁTICA, CONSULTORÍA DE INFORMÁTICA Y ACTIVIDADES CONEXAS. 
+     
+Esta división comprende las siguientes actividades de consultoría en la esfera de las tecnologías de la información:
+escritura, modificación y ensayo de programas informáticos y suministro de asistencia en relación con esos programas;
+planificación y diseño de sistemas informáticos que integran equipo y programas informáticos y tecnología de las
+comunicaciones; gestión y manejo in situ de los sistemas informáticos o instalaciones de procesamiento de datos de
+los clientes; y otras actividades profesionales y técnicas relacionadas con la informática.
+     
+J6201 - Actividades de desarrollo de sistemas informáticos 
+  * Actividades de diseño de la estructura y el contenido de los elementos siguientes (y/o escritura del código informático
+    necesario para su creación y aplicación): programas de sistemas operativos (incluidas actualizaciones y parches de
+    corrección), aplicaciones informáticas (incluidas actualizaciones y parches de corrección), bases de datos y páginas
+    web.
+
+Ejemplos de esta categoría dentro de la muestra:
+
+811020576	CHOUCAIR CARDENAS TESTING S.A.
+
+830013774	INDRA COLOMBIA LTDA
+
+830096374	INDRA SISTEMAS S.A SUCURSAL COLOMBIA
+
+900481621	LG CNS COLOMBIA SAS
+
+Este sector se denominará desarrollo de software/desarrollo en adelante.
+
+
+
+J6202 - Actividades de consultoría informática y actividades de administración de instalaciones informáticas
+
+  * Actividades de planificación y diseño de sistemas informáticos que integran equipo y programas informáticos y
+    tecnología de las comunicaciones.
+  * Servicios de gestión y manejo in situ de sistemas informáticos y/o instalaciones de procesamiento de datos de los
+    clientes, y servicios de apoyo conexos.
+ 
+ Ejemplos de esta categoría presentes en la muestra:
+
+800057965	VISION SOFTWARE S.A.S
+
+800103052	ORACLE COLOMBIA LIMITADA
+
+800159527	AMADEUS IT GROUP COLOMBIA S.A.S.
+
+800241958	HEWLETT PACKARD COLOMBIA LTDA
+
+830055791	AXITY COLOMBIA SAS
+
+830089336	WESTCON GROUP COLOMBIA LTDA
+
+830114969	COBISCORP COLOMBIA S.A.
+
+900079131	TECNOCOM COLOMBIA S A S
+
+900150662	"EVERIS BPO COLOMBIA LTDA
+
+900210032	EVERIS SPAIN S.L. SUCURSAL EN COLOMBIA
+
+800057965	VISION SOFTWARE S.A.S
+
+900478383	SOFTWAREONE COLOMBIA S A 
+
+
+Este sector en adelante se denomninará consultoría.
+
+
+
+J6209 - Otras actividades de tecnologías de información y actividades de servicios informáticos
+  * Actividades relacionadas a la informática como: recuperación en casos de desastre informático,
+    instalación de programas informáticos.
+  * Actividades de instalación (montaje) de computadoras personales.
+
+A esta clasificación pertenecen en la muestra:
+
+830079872	STUDIOCOM.COM INC
+
+830084433	SOCIEDAD CAMERAL DE CERTIFICACION DIGITAL CERTICAMARA S.A.
+
+900320612	SAP COLOMBIA SAS
+
+Este sector se denominará software.
+
+
+
+J6311 - Procesamiento de datos, alojamiento (hosting) y actividades relacionadas
+
+Esta división comprende  las actividades de procesamiento de datos y hospedaje, y otras actividades dirigidas 
+principalmente al suministro de información
+
+  * Suministro de infraestructura para servicios de hospedaje, servicios de procesamiento de datos y actividades conexas.
+  * Incluye actividades especializadas de hospedaje, como: hospedaje de sitios web, aplicaciones, servicios de
+    transmisión de secuencias de vídeo por Internet.
+  * Actividades de procesamiento y suministro de servicio de registro de datos: elaboración completa de datos facilitados
+     por los clientes, generación de informes especializados a partir de datos facilitados por los clientes.
+  * Servicios de aplicaciones.
+  * Suministro a los clientes de acceso en tiempo compartido a servicios centrales.
+  
+
+Las empresas de este sector en la muestra son:
+
+800195326	ORANGE BUSINESS SERVICES COLOMBIA S A
+
+830109723	PAYU COLOMBIA SAS
+
+900089104	ENLACE OPERATIVO S.A.
+
+Este sector se considerará en adelante como servicios de infraestructura de Tecnología Informática.
+
+
+Las empresas que participan en la muestra son:
+```{r}
+
+contador <- unique(dat_cosv4$razon)
+contador
+
+
+```
+
+La muestra tiene empresas de diferentes tamaños pero todas cumplen que existen hasta el 2018 y han perdurado 6-7 años.
+
+
+Para revisar que tan balanceada está la muestra en cuanto al tipo de empresas que incluye tenemos:
+
+```{r}
+contador=aggregate(periodo~ciiu,data=dat_cosv4, FUN = length )
+contador
+```
+
+Respecto al ciiu por año la muestra está desbalanceada porque en los 146 registros dominan las empresas
+de consultoría y de administración de sistemas (J6202),  el resto que son los desarrolladores (J6201)
+y los de servicios de infraestructura (J6311) y los vendedores de Software practicamente se podrían unir en una sola
+clase, esto se hace incluyendo una nueva variable denominada ciiub.
+
+```{r}
+contador=aggregate(periodo~ciiub,data=dat_cosv4, FUN = length )
+contador
+```
+ 
+ Está mucho mas balanceada que las categorías ciiu originales.
+ 
+ 
+ 
+#4.4 Comportamiento del sector de la tecnología
+
+
+Se inicia la revisión del sector mostrando la distribución de la muestra según la ubicación de su oficina central y 
+relacionando la con los costos e ingresos para ver la escala de las empresas de cada localidad:
+```{r}
+xyplot(dat_cosv4$costo_ventas/10000000 ~dat_cosv4$ingresos/1000000|dc,dat_cosv4,
+ main="Figura 1
+ Costos versus ingresos sector TI  por ubicación (MM)",
+ xlab="Costo (rojo)", ylab="Ingresos (azul)",col=c("red","blue"))
+```
+
+La concentración de la oficina principal de las empresas en Bogotá es obvia y se ve que las empresas
+en Medellín tienen escalas pequeñas muy parecidas entre sí y sus ingresos están por debajo de los $10 mil millones.
+Las empresas en Bogotá son muy variadas y mas grandesm, aunque también se ve una concentración de empresas medianas 
+por debajo de $20 mil millones de ingresos.
+
+
+Se pasa a caracterizar la muestra por la clasificación industrial mencionada antes:
+
+```{r}
+
+require(lattice)
+xyplot(dat_cosv4$costo_ventas/1000000~dat_cosv4$ingresos/1000000|ciiub, data=dat_cosv4,
+   type=c("p", "r"),
+   main=list(
+     label="Figura 2 
+            Costos versus ingresos sector Tecnología Informática (MM)",
+     cex=0.85),
+   xlab=list(
+     label="Costo ventas $ ",
+     cex=0.85),
+   ylab=list(
+     label="Ingresos $",
+     cex=0.85),
+   scales=list(cex=0.7),
+   par.settings=simpleTheme(col="red", col.line="blue")
+   
+ )
+
+```
+
+
+La gráfica muestra la relación de costos de ventas e ingresos para las dos categorías globales del sector, puede
+verse que el costo y el ingeso tienen una relación creciente  y ambos sectores tienes magnitudes y se mueven dentro de rangos muy similares. Sólo la consultoría tiene algunos valores muy altos mayores de $600 mil millones.
+
+A continuación se baja al detalle de la gráfica 2, para entrar a revisar por periodo y nits pero graficando el cociente de los costos/ingresos que puede de forma mas directa mostrar el desempeño ya que siempre se desa
+que ese cociente sea menor que uno:
+
+```{r}
+my.plot <- xyplot(dat_cosv4$costo_ventas/dat_cosv4$ingresos ~periodo|nit, data=dat_cosv4,
+   type=c("p", "r"),
+   main=list(
+     label="Figura 3 
+            Costo ventas / ingresos sector Tecnología Informática",
+     cex=0.85),
+   xlab=list(
+     label="Periodo",
+     cex=0.85),
+   ylab=list(
+     label="Costo ventas / ingresos",
+     cex=0.85),
+   scales=list(cex=0.7),
+   par.settings=simpleTheme(col="red", col.line="blue")
+   
+ )
+
+update(my.plot, panel = function(...) {
+            panel.abline(h = 1, v = 1, lty = "dotted", col = "red")
+            panel.xyplot(...)
+        })
+```
+
+
+Esta gráfica muestra el comportamiento de la relación costo/ingreso para cada una de las empresas de la muestra en función
+de los periodos y el nit.Puede verse que la mayor parte de las 21 empresas tienen una relación costo ventas/ingreso cercana
+a uno, sin embargo, la cercanía a 1 no es muy clara debido a que es una gráfica muy cualitativa por la escala.
+
+Sobresale entre las firmas con problemas 900079131	TECNOCOM COLOMBIA S A S, que muestra varios datos claramente por encima de la referencia que es el uno. El resto de empresas tiende a estar por debajo de uno pero muy cerca.
+
+pocas empresas muestran un margen claro con ingresos mucho mayores que sus costos,estas son: 
+
+* Del sector de la infraestructura están como las mas boyantes:
+
+900481621	LG CNS COLOMBIA SAS  J6201
+
+830109723	PAYU COLOMBIA SAS    J6311
+
+830109723	PAYU COLOMBIA SAS    J6209
+
+830084433	CERTICAMARA S.A.     J6209
+
+* Del sector de la consultorías están como las mas boyantes :
+
+800103052	ORACLE COLOMBIA      J6202
+
+800159527	AMADEUS IT  S.A.S.   J6202
+
+En una aproximación muy burda 29% de las empresas de TI están mostrando los mejores resultados empresariales 
+en la muestra.
+
+Es de anotar que 800103052	ORACLE COLOMBIA LIMITADA , muestra una ruptura en la tendencia de sus costos en 2015
+la cual puede deberse a la entrada del reporte obligatorio bajo NIIF.
+
+
+A continuación se revisan lo datos de cociente costo/ingreso para las clasificaciones internacionales:
+
+```{r}
+my.plot <- xyplot(dat_cosv4$costo_ventas/dat_cosv4$ingresos ~periodo|ciiu, data=dat_cosv4,
+   type=c("p", "r"),
+   main=list(
+     label="Figura 4
+            Costo ventas / ingresos sector Tecnología Informática",
+     cex=0.85),
+   xlab=list(
+     label="Periodo",
+     cex=0.85),
+   ylab=list(
+     label="Costo ventas / ingresos",
+     cex=0.85),
+   scales=list(cex=0.7),
+   par.settings=simpleTheme(col="red", col.line="blue")
+   
+ )
+
+update(my.plot, panel = function(...) {
+            panel.abline(h = 1, v = 1, lty = "dotted", col = "red")
+            panel.xyplot(...)
+        })
+
+```
+
+La figura 4 muestra la tendencia de cociente y puede verse por la línea azul que los tipos J6311
+que es infraetructura TI y el J6201 Desarrollo , se están volviendo mas fuertes porque la pendiente
+es negativa entonces sus ingresos están creciendo mas que sus costos de ventas, posibles causas para
+explicar estas dos tendencias podrían ser:
+  * que la introducción de la nube que lleva a migrar los servidores propios
+    hacia hosting o esquemas de nubes públicas(Amazon, Azure, google , etc) 
+  * el crecimiento en el desarrollo de software se explica por el interés creciente en desarrollar la
+    transformación digital y la innovación en las compañías.
+
+La consultoría y el software tienen pendiente positiva lo que indica que sus costos están creciendo,
+sin que obtengan mas ingresos, entonces les está siendo mas difícil vender. Esta tendencia se verá 
+muy fuerte en 2021 cuando las empresas transmitan los estados financieros de 2020 afectados por la 
+COVID 19.
+
+#4.5 Comportamiento de las variables macroeconómicas
+
+```{r}
+
+#Se crea un dataframe sólo con los datos numéricos del conjunto de datos original, 
+#es auxiliar. Se usa sobretodo para los gráficos descriptivos porque a veces 
+#piden que todo sea numérico
+
+datos<-subset(dat_cosv4,select = c("ingresos", "costo_ventas","vpib", "trm" 
+                ,"inflacion" , "balcc" , "balfi", "tinterve" ,"tdes")) 
+
+```
+
+Se extraen las variables continuas del dataset para su análisis 
+```{r}
+#Se crea un dataframe sólo con las variables que van a participar en el modelo .
+
+
+datos4<-subset(dat_cosv4,select = c( "ingresos","periodo","nit","cnit",
+"ciiu","costo_ventas","vpib", "trm" ,"inflacion" , "balcc" , "balfi",
+                                                  "tinterve" ,"tdes"))
+
+```
+
+A continuación se hace el análisis de dependencias de las variables macroeconómicas que se usarán como regresoras para ver si hay colinealidad:
+```{r}
+pairs(datos[,1:9], lower.panel = panel.smooth, upper.panel = panel.cor,
+main="Figura 5 
+     relación ind. macroec.")
+```
+
+Analizando los indicadores macroeconómicos para ver como se relacionan entre sí, se encuentran
+con alta correlación :
+  * ingresos ~costo_ventas --> 0.94
+  
+  * vpib ~ trm             --> 0.79
+  
+  * vpib ~ balfi           --> 0.93
+  
+  * trm  ~ balfi           --> 0.84
+  
+  * inflacion ~ balfi      --> 0.65
+  
+  * inflacion ~ tinterve   --> 0.89
+  
+  * tinterve ~ balfi       --> 0.64
+  
+  * tdes ~ inflación       --> 0.62
+  
+  * tdes ~ trm             --> 0.61
+  
+  Donde estos nombres de variables tienen el siguiente significado:
+  
+  * vpib      : variación del producto interno bruto 
+  
+  * trm       : tasa representativa del mercado  ( pesos/dolar)
+  
+  * balfi     : balance fiscal  (miles de millones de pesos)
+
+  * balcc     : balance en cuenta corriente (miles de millones de dólares)
+  * inflacion : tasa de inflación , como proporción
+  * tdes      : tase de desempleo, en proporción
+  * tinterve  : tase de intervención , en proporción
+  
+  Es interesante anotar que inicialmente se hicieron ensayos usando el pib en lugar de su variación
+  y se tenía que  :
+  
+  * pib ~ trm    --> 0.95
+
+  * pib ~ balfi  --> 0.88
+  
+  es decir que la variación del pib tiene menos correlación con la trm que la variación del pib pero
+  se compensa con el hecho de que la variación del pib está mas correlacionada con el balfi. 
+
+De aquí en adelante siempre se hablará de los indicadores macroeconómico mediante estos nombres de
+variables.
+  
+  
+#5. Transformación de variables
+
+Se definen transformaciones/normalizaciones para las variables de manera que las escalas del dataset
+no estén demasiado alejadas entre sí. Para cada variable se hace una propuesta. 
+
+   * Transformación para la variación del pib (vpib)
+   
+Está en forma de proporción no se le hace nada.
+
+```{r}
+plot(dat_cosv4$periodo,datos$vpib,main = "Figura 6 
+     Variación PIB",xlab="periodo", ylab="Variación PIB")
+
+
+```
+
+La variación del producto interno bruto tiene un mínimo en 2017 y un máximo en 2013. No se le hace conversión.
+
+* Transformación del costo de ventas
+
+Esta variable está en miles de pesos ya que los estados financieros se transmiten así a la Supersociedades.
+
+El costo de ventas mostró en el gráfico de pares que está altamente relacionado con el ingreso (0.94), entonces aprovechamos este hecho para convertir el costo de ventas en una proporción del ingreso de la compañía, así se evita que las diferencias de tamaño de las empresas generen sesgos.
+
+
+```{r}
+datos$costo_ventasn<-datos$costo_ventas/datos$ingresos
+my.plot <-boxplot(datos$costo_ventasn,data = datos,main = "Figura 7 
+                  Costo_ventas/Ingresos",
+                  ylab="Costo_ventas/Ingresos")
+
+#print ( " Media costo/ingreso")
+mn<-mean(datos$costo_ventasn)
+
+#print ("mediana (costo/ingreso)")
+md<-median(datos$costo_ventasn)
+
+abline(h=c(mn,md), col=c("blue", "red"), lty=c(1,2), lwd=c(1, 3))
+
+```
+
+La línea azul es la media y la punteada roja la mediana.
+
+```{r}
+histogram(datos$costo_ventasn ,
+          main= " Figura 8
+          Distribución de costo/ingreso ", breaks =15, col="light blue")
+
+```
+
+Del boxplot se obtiene que la mediana=0.73 y la media=0,69 son parecidas, es decir que los comportamientos de las empresas 
+son similares y entonces puede decirse que 50% de las empresas tienen costo/ingreso por debajo de 0.7 y 50& están por encima, lo cual parece algo alto por la cercanía al 1 y a empezar a perder, sería mas sano que hubieran mas empresas con mejores resultados.
+Dee ambas gráficas se ve que en las colas colas inferiores a 0.5 y superiores a 1, hay unos pocos datos siendo mayor cantidad los de las colas inferiores a 0.5, entonces hay un poco mas de empresas con resultados my buenos que de empresas con resultados muy malos.
+
+La distribución es asimétrica a la derecha entonces que las empresas tienden a cocientes costo/ingreso bajos
+pero ya vimos que muy centrados entre 0.7 -0.9 en ambas gráficas.
+
+
+* Transformación para la inflación
+
+Se probaron transformaciones incluyendo la normalización pero al ser ya un valor entre cero y uno al final se acepta como viene.
+
+```{r}
+
+plot(dat_cosv4$periodo,datos$inflacion,main = "Figura 9 inflación", ylab="Inflación")
+
+```
+
+* Transformación de la tasa de cambio
+
+Para la tasa de  cambio se elige reescalarla respecto a su rango total, los valores quedan del orden de magnitud de las otras tasas y no hay negativos. Se trató con logaritmos, con la 
+normalización respecto a su media y std y con 1/trm pero se intrducían valores negativos y
+algo como desorden y variabilidad mas allá de su estructura propia.Entonces se decide sólo reescalar.
+
+```{r}
+library(dplyr)
+library(scales)
+R= rescale(datos$trm)
+plot(dat_cosv4$periodo,R,main= "Figura 10
+     TRM reescalada", ylab="TRM reescalada")
+```
+
+Para la trm , se reescala(se le resta a cada valor el mininmo de la variable y ese valor se divide por la diferencia entre el el máximo y el mínimo de la variable) y se le saca logaritmo.
+
+
+* Transformación de la tasa de intervención
+Se hicieron ensayos normalizandola y otros sacando logaritmo pero no se vió ningun bondad en esos procedimientos:
+
+```{r}
+
+plot(dat_cosv4$periodo,datos$tinterve, main = "Figura 11 Tasa de intervención",
+     ylab="Tasa de intervención")
+```
+
+
+No se hacen transformaciones en la tasa de intervención.
+
+
+* Transformación de la tasa de desempleo
+
+La tasa de desempleo se dejó proporción. sin transformación
+
+```{r}
+
+plot(dat_cosv4$periodo,datos$tdes, main="Figura 12 Tasa de desempleo", 
+     ylab="Tasa de desempleo")
+```
+
+
+* Transformación del balance en cuenta corriente
+
+Este balance está en miles de millones y dólares y es negativo, se dividiéndolo por un valor de referencia igual a su valor en 2012 y se respeta el signo.
+
+
+```{r}
+datos$balccn<- datos$balcc/11.36239836
+plot(dat_cosv4$periodo,datos$balccn, main= "Figura 13
+     Balance cuenta corriente estandarizado", ylab="Balance cuenta corriente")
+
+```
+
+
+* Transformación del balance fiscal
+
+Se normaliza dividiéndolo por su propio valor en 2012 que es el primer año de la muestra.
+
+```{r}
+datos$balfin <- datos$balfi/15.5
+
+plot(dat_cosv4$periodo,datos$balfin ,main = "Figura 14
+     Balance fiscal estandarizado", ylab="Balance fiscal normalizado")
+```
+
+Los valores bajan de magnitud y están mas cercanos al resto de variables. 
+
+
+Se transforman las columnas del dataset original de acuerdo con el análisis anterior y
+las variables estandarizada quedan con una n al final de su nombre.
+
+Finalmente, se generan los datasets de entrenamiento con los datos de 2012-2017 y el de entrenamiento con 2018
+para empezar a ajustar modelos.
+
+
+```{r}
+datos4$costo_ventasn <- datos4$costo_ventas/datos4$ingresos
+datos4$balccn <- datos4$balcc/(11.36239836)
+datos4$balfin <- datos4$balfi/(15.5)
+datos4$rtrm   <- rescale(datos4$trm)
+datos4$periodon <- datos4$periodo -2012
+
+# Importante tdes, inflacion, vpib,tinterve  permanecen como proporciones
+# sin transformación. El periodo se escala restandole 2012 que es 
+# el primer periodo
+
+
+train4 <-subset(datos4,datos4$periodo != 2018,
+select = c("periodon","nit", "ciiu","costo_ventasn","vpib",
+           "rtrm" ,"inflacion" , "balccn" ,  "balfin",
+                    "tinterve" ,"tdes"))
+
+test4 <- subset(datos4,datos4$periodo == 2018,
+select =  c("periodon","nit","ciiu", "costo_ventasn",
+"vpib", "rtrm" ,"inflacion" , "balccn" ,  "balfin",
+                                "tinterve" ,"tdes"))
+
+
+```
+
+
+```{r}
+require(lattice)
+
+xyplot(costo_ventasn~periodo|nit, datos4, type = c("g","p","r"),
+      index = function(x,y) coef(lm(y~x))[1],
+      main = " Figura 15
+      costo/ingreso vs periodo para cada nit",
+      xlab = "Ejercicio",
+      ylab= "Costos de ventas", aspect = "xy",layout= c(21,1))
+```
+
+Cada individuo tiene su propio intercepto y pendiente  y su propia curva de crecimiento, pero necesitamos los comportamientos
+de la población y en eso parece que la mitad de las empresas tienen pendiente positiva que están cercanas
+entre sí en [0.5,1] con unos outliers muy altos y la mitad con pendiente negativa que se ve a la derecha
+del gráfico están ma dispersos. Si se deseara invertir habría que mirar entre los de la izquierda.
+
+Entonces el equilibrio del sector total se ve un poco precario.
+
+
+
+#6. Ajustar varios modelos lineales
+
+En este apartado se probarán varios modelos iniciando desde un modelo simple a otros mas complejos, para entrenar se usarán los datos del dataset original de 2012 a 2017. Se usará 2018 para a predicción.
+
+En los primeros modelos se tratará de ajustar la variable dependiente que es costo_ventasn correspondiente al
+cociente costo ventas/ingresos contra el periodo (año) y luego se introducirán las variables macroeconómicas.
+
+En este capítulo se usará la función lme de la librería nlme.
+
+##6.1 Modelo 1: ajustar varios modelos lineales simples uno por NIT 
+
+Con el fin de aprender el uso de varios modelos lineales, se inicia por ajustar un modelo lineal 
+para cada nit presente en el dataset. Ajustando sólo contra el tiempo, mas adelante se añadirán las variables
+macroeconómicas.
+
+En este caso se agrupa el dataset en un objeto y se hace una lista de regresiones de la variable respuesta contra el tiempo:
+
+ $y_{ij} = \beta _{0i} + \beta _{ij}t_{ij} + \epsilon _{ij}$
+ 
+cada individuo tendrá una ecuación como la anterior:
+
+```{r results = "hide"}
+library(nlme)
+###############################
+# se crea un dataframe agrupado con los datos de entrenamiento y se usará para ajustar
+###############################
+datos4g.new <-
+  groupedData( costo_ventasn ~ periodon | nit,
+              data = as.data.frame( train4 ),
+              FUN = mean,
+              labels = list( x = "periodon",
+                y = "costo_ventas estandarizado" ),
+              units = list( x = "(yr)", y = "(COP)") )
+
+```
+
+En la primera prueba de modelos lineales ajustamos modelos simples para los individuos con
+la función lmList, usando el objeto agrupado creado:
+
+```{r results = "hide"}
+lm41.list <- lmList(costo_ventasn~  periodon, data = datos4g.new)
+plot(intervals(lm41.list), main= "Figura 16 
+     Regresiones individuales por nit")
+
+```
+
+```{r}
+#Resultados del modelo 21 regresiones simples una por nit
+summary(lm41.list)
+```
+
+Puede verse que cada NIT tiene su intercepto y pendiente. Hay mas variabilidad en el intercepto que se desplaza en una especie de diagonal y no se centra claramente en un valor.
+Por su parte las pendientes parecen centrarse en un valor pequeño cercano a cero.
+Este método permite conocer el comportamiento de cada individuo pero no directamente de la población. 
+
+Hay 21 nits en el dataset de empresas con registros completos y usando el modelo ajustado con la
+variable período, quedan 42 parámetros con sus errores lo que sería un modelo bastante grande.
+
+La revisión detallada de la tabla de resultados muestra que los interceptos son todos significativos mientras
+que para las pendientes del tiempo sólo  hay 3 empresas que muestran dependencia de costo_ventasn contra el 
+tiempo estas son:
+
+830084433	SOCIEDAD CAMERAL DE CERTIFICACION DIGITAL CERTICAMARA S.A. --> tiene pendiente positiva.
+
+800103052	ORACLE COLOMBIA LIMITADA --> tiene pendiente positiva y es la mas alta de la estimadas
+
+
+los resultados representan bien lo que se observó en la figura 15 del diagrama de espagueti. Hay tanto
+pendientes negativas como positivas.
+
+
+#6.2 Modelo 2: ajustar modelo de efectos fijos intercepto individual y pendiente de población
+
+Se ajusta un intercepto para cada individuo y una pendiente para la población pero se incluye una variable 
+indicadora para cada individuo, la ecuación de esta regresión será:
+
+$y_{ij} = \beta _{0i} + \beta _{1}t_{ij} + \epsilon _{ij}$
+
+Entonces saldrán 21 interceptos como efecto fijo y la pendiente de la población
+
+```{r}
+datos4g.lm42 <- lm(costo_ventasn~nit+ periodon-1   , data = datos4g.new)
+summary(datos4g.lm42)
+```
+
+El modelo ajusta bien para todos los nits pero deja el tiempo por fuera.
+
+Los coeficientes hallados son los interceptos pertenecientes al efecto fijo de cada nit.
+
+En este modelo es de recordar que no usa intercepto general sino que se busca el efecto (intercepto) total de cada nit mas que su distancia a una media.
+
+Se obtienen 22 coeficientes para el modelo de efectos fijos en comparación al modelo simple que tiene 42.
+
+Extraemos los efectos del modelo para nit y periodo:
+```{r}
+library(effects)
+plot(allEffects(datos4g.lm42), cex=0.8, rotx=90)
+
+```
+
+La gráfica de la izquierda muestra los interceptos de los nit con sus intervalos de confianza contra la variable dependiente. Puede verse que los interceptos por si mismos no tienen una apariencia lineal muy definida. Por su parte, la gráfica de la derecha muestra el modelo ajustado para el tiempo con sus intervalos de confianza aunque su coeficiente/pendiente presenta un valor p muy alto que mostraría que el cociente costo /ingreso no está afectado por el tiempo.
+
+Los modelos 6.1 --> lm41 y 6.2--> lm42 tienen coeficientes similares en magnitud lo que es lo esperado y el primero tiene error de alrededor de 0.062 en los interceptos mientras que el segundo tiene mucho menos error(0.041) entonces sus interceptos serán mejores. Sin embargo, es un modelo sobreajustado no va a ser 
+capaz de generalizar porque siempre dará el intercepto con cualquier dato nuevo.
+
+La pendiente del perido para la población no es significativa, el comportamiento global no depende
+de ese factor porque se rechaza con p = 0.357.
+
+
+#6.3 Modelo 3: ajustar modelos de efectos mixtos
+
+Este modelo ajusta un intercepto general y una pendiente también global pero incluye un efecto
+aleatorio en el intercepto por  cada individuo.
+
+La ecuación de esta regresión será:
+
+$y_{ij} = \beta _{0} +  b _{i} + \beta _{1}t_{ij} + \epsilon _{ij}$
+
+$\beta _{0}$ y  $\beta _{1}$  le pertenecen a la población.
+
+$b _{i}$ es el intercepto aleatorio del i-ésimo nit.
+
+En este caso los interceptos de los nit serán la desviación desde la media que será el intercepto general.
+
+```{r}
+datos4g.lme43 <- lme(costo_ventasn~periodon ,random= ~1|nit ,data = datos4g.new)
+                    
+summary(datos4g.lme43)
+```
+
+```{r}
+intervals(datos4g.lme43)
+```
+
+El resumen del modelo de Efectos fijos  de nit y periodo:
+                                      lower        est.       upper
+(Intercept)                            0.5923      0.6741    0.7559
+periodon                              -0.0053      0.0047    0.0147
+sd((Intercept))                        0.1268      0.1755    0.2430
+sigma _epsilon                         0.0835      0.0957    0.1097 
+
+
+El modelo entrega dos coeficientes con sus intervalos de confianza,el correspondiente al coeficiente b
+es mas amplio que el del error aleatorio epsilon.
+
+El intervalo  de confianza para el coeficiente del tiempo va de negativo a positivo y el valor p es muy
+alto así que este modelo también rechaza el tiempo como regresor al igual que el del punto anterior.
+```{r}
+
+library(effects)
+plot(allEffects(datos4g.lme43), cex=0.8, rotx=90)
+```
+
+
+#6.4 Modelo 4: ajustar modelo de efectos mixtos y variables macroeconomicas
+
+Hasta el momento se han ajustado modelos que buscaban modelar solamente la influencia de los 
+individuos y el tiempo en los costos de ventas estandarizadas. En los modelos siguientes se incluyen los
+efectos de las variables macroeconómicas para lograr modelar todo el dataset.
+Es de anotar que se usarán las variables transformadas en secciones anteriores y el dataset usado es el de
+entrenamiento que tiene 2012-2017, como en todos los modelos de este trabajo.
+
+En este punto se ensayaron modelos relacionando el tiempo y las variables macroeconómicas 
+
+ A continuación el modelo:
+ 
+```{r}
+lmer44 <- lmer(costo_ventasn~periodon+(periodon|nit)  +tdes+ balccn-1     
+               ,   data=train4 )
+summary(lmer44)
+
+```
+
+```{r}
+plot(allEffects(lmer44), cex=0.8, rotx=90)
+```
+
+En este modelo tiene efectos fijos del periodon, la tdes y el balccn con valores t mayores a tres veces el error 
+estándar. Adicionalmente, tiene efectos aleatorios de los nits y el periodo.  Los efectos aleatorios tienen una
+correlación de -0.7, es decir que los resultados de este modelo se verán influenciados por los valores iniciales.
+
+Este modelo representa al conjunto de datos promedio de la población con tres coeficientes lo
+cual es un alto poder de compresión de información, pasamos de 42 a 22 y a 3 coeficientes.
+En este la aleatoriedad se descarga en los sujetos.
+
+
+#6.5 Modelo 5: ajustar modelo de efectos mixtos con pendiente aleatoria y variables macroeconomicas
+
+Se hace una variación del modelo anterior que tenia un intercepto como efecto aleatorio para cada nit y pendientes para el tiempo, la tasa de desempleo tdes y el balccn, e introduciendo otras variables.
+
+```{r}
+datos4g.lme45 <- lme(costo_ventasn~periodon+balccn+ rtrm -1 
+                     ,random = ~periodon-1|nit,   data=datos4g.new)
+summary(datos4g.lme45)
+```
+
+Todas las variables entran al modelo.
+
+```{r}
+plot(allEffects(datos4g.lme45), cex=0.8, rotx=90)
+```
+
+Los intervalos de confianza son estrechos puede ser un modelo con sobreajuste.
+
+
+
+#6.6 Modelo 6: ajustar modelo de efectos mixtos y variables macroeconomicas
+
+En este modelo que es similar al 6.4 --> lme44 pero se modifica la tdes por la rtrm, el balccn persiste en el
+modelo, ninguna otra variable o combinación mas compleja permite que el algoritmo converja o que no de singularidad.
+
+```{r}
+
+lmer46 <- lmer(costo_ventasn~periodon+ balccn  +(periodon|nit)  ,   data=train4 )
+summary(lmer46)
+        
+```
+
+```{r}
+
+plot(allEffects(lmer46), cex=0.8, rotx=90)
+```
+
+#6.7  Modelo 7 :Modelo mixto  para explorar el tipo de industria
+
+Se hace un intento de relacionar todos los factores de la muestra: periodo, nit,ciiu en un
+sólo modelo pero se rechaza la hipótesis de que los coeficientes no son cero porque todos los es
+estadísticos p-valor salen altos.
+
+```{r}
+
+lmer47 <- lmer(costo_ventasn~periodon+ciiu + (periodon|nit)  , data = train4)
+
+summary(lmer47)
+```
+
+En este modelo sobreviven el intercepto y el ciiu: J6202, el resto de valore t son bajos.
+
+
+#6.8 Comparación de los tres modelos anteriores
+
+A continuación se comparan todos los modelos de efectos mixtos probados:
+
+```{r}
+library(texreg)
+screenreg(list(datos4g.lme43,lmer44,datos4g.lme45,lmer46,lmer47),
+          single.row= FALSE,
+          stars=c(0.05),custom.model.names = c("lme43", "lmer44", 
+                                    "lme45", "lmer46", "lmer47"))
+
+```
+
+Como todos los modelos corresponden a la misma muestra se puede usar el AIC para seleccionar el mejor modelo de los 
+probados en términos de ajuste y en este caso será el modelo lmer44 que tiene el AIC mas bajo -151.99 ( el mas negativo
+deber tener menor pérdida de información). 
+Es de anotar que el AIC no implica que sea el modelo con la calidad de predicción ma alta, solo que es el mejor
+de los probados para la muestra dad.
+
+Esta es la forma general del modelo seleccionado:
+
+lmer44 <- lmer(costo_ventasn~periodon+tdes + balccn+ (periodon|nit)-1       ,   data=train4 )
+
+Es un modelo con efectos fijos en periodon+tdes + balccn  y efectos aleatorios en (periodon|nit).
+
+
+
+#7. Predicciones con el mejor modelo de efectos mixtos seleccionado
+
+#7.1 Revisión del ajuste del modelo seleccionado
+
+Se corre nuevamente el modelo seleccionado para sacar sus efectos y ver que no haya residuales con patrones:
+
+```{r}
+lmer44 <- lmer(costo_ventasn~periodon+(periodon|nit)  +tdes+ balccn-1     
+               ,   data=train4 )
+summary(lmer44)
+
+```
+
+Ya se habían revisado los valores t de los coeficientes y se ven superiores a tres veces el error estándar, entonces
+puede decirse que s rechaza la hipotésis de que los coeficientes son cero.
+
+Se calculas los efectos fijos, son los coeficientes de periodon, tdes, balccn.
+
+```{r}
+fixef(lmer44)
+
+```
+
+Sacamos los efectos aleatorios 
+```{r}
+ranef(lmer44)
+
+```
+
+
+Ahora se revisa cómo se distribuyen los efectos aleatorios.
+```{r}
+aleatorios<- ranef(lmer44)$nit
+pairs(aleatorios, main= "Figura 17 
+      Efectos aleatorios")
+
+```
+
+
+No se ve patrón hay algunos valores apiñados pero hay regularidad podemos decir que se extrajeron 
+los efectos. Se puede predecir el comportamiento de un individuo existente o uno nuevo asumiendo que su comportamiento estará en el promedio usando el modelo lmer44.
+
+
+A continuación se calculan las distancias de Cook[10] usando la librería influence ME para modelos de 
+efectos mixtos, esto con el fin de detectar outliers que pudieran comprometer el modelo.
+
+De acuerdo con [11], el corte para la distancia de Cook es 4/# de sujetos = 4/21 = 0.19, como no se
+especifican parámetros, los cálculos usan el modelo completo,  se corre la
+función a continuación:
+
+```{r  results="hide"}
+
+library(influence.ME)
+infl <- influence(lmer44, obs = TRUE)
+cooks.distance(infl)
+plot(infl, which = "cook",main= "Figura 18
+     Distancia de Cook",cutoff=.19,xlab="Cook´s Distance",ylab="NIT" )
+
+
+
+```
+
+La función devuelve un vector que contiene valores para la Distancia Cook en función 
+del modelo lmer44.Cada fila muestra la distancia de Cook asociada con cada 
+conjunto evaluado de datos influyentes pero anidados dentro cada NIT. En este caso se 
+detecta un sólo outier mostrado con con un triángulo rojo en la parte derecha de la 
+figura 18.  
+Revisando la matriz de distancias el outlier es el nit 56 con la distancia de Cook 0.34957
+que corresponde al nit 900079131	TECNOCOM COLOMBIA S A S, es la empresa que tiene los
+cocientes costo/ingreso mas altos de toda la muestra como se mostró en la figura 3.
+En este caso se decide no hacer nda con el outlier ya que si bien la distancia de Cook
+se ve muy grande, la observación del comportamiento en la muestra en las diferentes
+gráficas y modelos muestran que su influencia no es tan alarmante.
+
+
+Finalmente en las revisiones del ajuste, a continuación se grafican los residuales del 
+modelo lmer44. Son los valores tal cual son calculados sin ningún escalamiento.
+
+Al observarlos no se ve ningún patrón especial o tendencia que haga pensar en que
+el modelo tenga variables faltantes.
+
+
+```{r}
+plot(resid(lmer44),main= "Figura 19
+     Gráfica de residuales moodelo LMER44")
+```
+
+En conclusión puede decirse que el modelo Lmer44 cumple con los criterios de ajuste para
+las regresiones lineales de efectos mixtos.  Se procede a analizar su poder de predicción.
+
+
+
+
+#7.2 Calidad de la predición en test del modelo seleccionado
+
+
+Se calculan las predicciones para train y test y se comparan los errores en train y test, luego las predicciones se grafican:
+
+```{r}
+
+train4$predictlmer <-predict(lmer44, data.frame(train4))
+test4$predictlmer <-predict(lmer44, data.frame(test4))
+
+accur_trainlmer = mean((train4$costo_ventasn - train4$predictlmer)^2)
+accur_testlmer =  mean((test4$costo_ventasn - test4$predictlmer)^2)
+
+RMSEtrain = accur_trainlmer^(1/2)
+RMSEtest = accur_testlmer^(1/2)
+
+print("******* Raiz cudrada del error medio cuadrado entrenamiento *****")
+RMSEtrain
+
+print("******* Raiz cudrada del error medio cuadrado test  *************")
+RMSEtest
+```
+
+Errores RMSE de entrenamiento y pruebas no son muy diferentes  y el de test está mas alto que el de entrenamiento así que el modelo tiene potencial para generalizar. 
+Se pasa a graficar las predicciones versus el real para ver el comportamiento:
+
+
+
+```{r}
+
+plot(train4$predictlmer, train4$costo_ventasn,pch = c(16, 17) ,
+     col = c("dark green", "red"), xlab="Predicho verde"
+                ,ylab="Real rojo", main = "Figura 20
+                 Costo_ventasn predicho versus real")
+abline(lm(costo_ventasn ~train4$predictlmer, data = train4), col="red")
+
+```
+
+
+El modelo es capaz de seguir muy de cerca los datos de entrenamiento llegando a predecir valores extremos.
+
+```{r}
+
+plot(test4$predictlmer, test4$costo_ventasn,pch = c(16, 17) ,
+     col = c("red", "blue"), xlab="Predicho azul"
+                ,ylab="Real rojo", main = "Figura 21
+                 Costo_ventasn predicho versus real")
+abline(lm(costo_ventasn ~test4$predictlmer, data = test4), col="red")
+
+```
+
+Los valores predichos que se muestran con triangulos azules se concentran entre 0.6 y 0.9
+de manera similar  a lo descrito para la población en el análisis descriptivo, este modelo
+no predice casos extremos en test sino casos promedio dentro de la población. Esto contrasta
+con los resultados de entrenamiento donde intenta predecir algunos valores extremos.
+
+
+
+Se unen train y test en una nueva serie para mostrar toda la muetra como predicha:
+
+```{r }
+
+####################XYPLOT condicionado por nit muestra real para comparación
+my.plot <- xyplot(dat_cosv4$costo_ventas/dat_cosv4$ingresos ~periodo|nit, data=dat_cosv4,
+   type=c("p", "r"),
+   main=list(
+     label="Figura 3 para comparacion
+            Costo ventas / ingresos sector Tecnología Informática",
+     cex=0.85),
+   xlab=list(
+     label="Periodo",
+     cex=0.85),
+   ylab=list(
+     label="Costo ventas / ingresos",
+     cex=0.85),
+   scales=list(cex=0.7),
+   par.settings=simpleTheme(col="red", col.line="blue")
+   
+ )
+
+update(my.plot, panel = function(...) {
+            panel.abline(h = 1, v = 1, lty = "dotted", col = "red")
+            panel.xyplot(...)
+        })
+
+
+
+
+
+###################XYPLOT dado el nit muestra predicha #######################
+
+
+test4<-rbind(test4,train4) 
+
+
+my.plot <- xyplot(test4$predictlmer~periodon|nit, data=test4,
+   type=c("p", "r"),
+   main=list(
+     label="Figura 22  Valores predichos 
+            Costo ventas / ingresos sector Tecnología Informática",
+     cex=0.85),
+   xlab=list(
+     label="Periodo",
+     cex=0.85),
+   ylab=list(
+     label="Costo ventas / ingresos",
+     cex=0.85),
+   scales=list(cex=0.7),
+   par.settings=simpleTheme(col="red", col.line="blue")
+   
+ )
+
+update(my.plot, panel = function(...) {
+            panel.abline(h = 1, v = 1, lty = "dotted", col = "red")
+            panel.xyplot(...)
+        })
+```
+
+Esta figura contiene la muestra predicha resultado de unir 2012 - 2017 de train con 2018 de test.
+Se puede comparar con la figura 3 del capítulo de transformación de variables y se ve el parecido
+de las series por nit, estas predicciones son una versión suavizada de la serie original,
+el dato que corresponde al periodo 6 (2018 ) es el predicho y puede verse que tiende a estar hacia
+arriba de la tendencia que traían los predichos de entrenamiento (circulos periodo 0-5).
+Estas series se acercan menos al valor 1 que las originales. 
+Es interesante que por ejemplo Oracle 800103052 tiene un salto en los reales por el cambio a NIIF
+y los predichos no lo muestran, pareciera que estuviera creciendo de manera continua.
+
+Tambiém puede verse para el nit 900079131 que tenía varios valores por encima de 1 que los valores
+predichos reproducen esta condición del sujeto. En este caso la predicción del 2018
+
+
+```{r}
+##################Xyplot muestra original se repite para facilitar la comparacion
+my.plot <- xyplot(dat_cosv4$costo_ventas/dat_cosv4$ingresos ~periodo|ciiu, data=dat_cosv4,
+   type=c("p", "r"),
+   main=list(
+     label="Figura 4 para comparación es el original
+            Costo ventas / ingresos sector Tecnología Informática
+              MUESTRA REAL ",
+     cex=0.85),
+   xlab=list(
+     label="Periodo",
+     cex=0.85),
+   ylab=list(
+     label="Costo ventas / ingresos",
+     cex=0.85),
+   scales=list(cex=0.7),
+   par.settings=simpleTheme(col="red", col.line="blue")
+   
+ )
+
+update(my.plot, panel = function(...) {
+            panel.abline(h = 1, v = 1, lty = "dotted", col = "red")
+            panel.xyplot(...)
+        })
+
+
+
+#######################XYPLOT de la muestra predicho#########################
+
+my.plot <- xyplot(test4$predictlmer ~periodon|ciiu, data=test4,
+   type=c("p", "r"),
+   main=list(
+     label="Figura 23
+            Costo ventas / ingresos sector Tecnología Informática
+             muestra predicha 2012-2018",
+     cex=0.85),
+   xlab=list(
+     label="Periodo",
+     cex=0.85),
+   ylab=list(
+     label="Costo ventas / ingresos",
+     cex=0.85),
+   scales=list(cex=0.7),
+   par.settings=simpleTheme(col="red", col.line="blue")
+   
+ )
+
+update(my.plot, panel = function(...) {
+            panel.abline(h = 1, v = 6, lty = "dotted", col = "dark green")
+            panel.xyplot(...)
+        })
+```
+
+Esta gráfica se puede comparar con la Figura 4 , es interesante el cambio que el modelo de
+introduce a cada tipo de industria, notése que la línea verde vertical señala la 
+predicción de test para 2018 y puede verse que sigue una tendencia bastante parecida a la
+real por observación directa. 
+El predicho de costos/ingresos mantiene la tendencia que se habia detectado antes así:
+
+  * Suave crecimiento J6209 servicios de software comercial: menor productividad podrán tener
+    mas costos de ventas o menos ingresos.
+  * Tendencia suave descendente para J6201 desarrolladores de software: mayor productividad
+    por descenso en costos o incremento de ingresos.
+  * Casi estabilidad para los del tipo J6311 Infraestructura TI, los reales muestran tendencia
+    un poco más marcada. S mantendrá su desempeño. 
+  * El tipo J6202 de la consultoría tiene pendiente  positiva: perderá productividad.
+  
+Es de anotar que si bien no es muy común unir train y test y verlas como un todo, aquí sirve
+para establecer de manera cualitativa la precisión de la predicción.
+
+
+
+
+
+# 8 Análisis del uso del tiempo en el desarrollo del trabajo
+
+
+Este trabajo estuvo marcado por tres elementos principales
+
+- Curva e Aprendizaje en R
+   Este es el segundo programa que hago en R así que cosas que todo toma mas tiempo del que debería, por
+   eso las actividades con mas programación fueron mas lentas.  Considero que R es mucho mas amigable y
+   versátil que Python y se logra ser productivo mas rápido pero igual el trabajo total se ralentiza cuando
+   no hay experiencia.
+
+- Búsqueda para entender los métodos mixtos
+  Este es un tema confuso en la literatura porque tiene muchas variantes, sólo pude entender cuando lo
+  empecé a ver como modelos mixtos en datos longitudinales. El tema se presenta de manera compleja y confusa
+  en los libros y artículos.
+  
+- Hubo que hacer muchas iteraciones en transformación y búsqueda de mas datos entonces siento que reescribí
+  el reporte al menos tres veces.
+
+  Actividad...........................Horas...Porcentaje
+  
+1) Consolidación de información .......	48......26%
+2) Transformación de varibles..........  8...... 4%
+3) Análisis descriptivo..................24......13%
+4) Ajuste y validación de modelos.......66......35%
+5) Redacción del reporte................40......22%
+
+ Total horas invertidas ...............186
+
+De manera global se invirtió un 26% en tareas de preparación , 52% haciendo el modelo,
+22% en el informe.
+
+Estos tiempos no son perfectamente separables por que las actividades son iterativas.
+
+
+
+
+
+
+# Conclusiones
+
+* Este trabajo permitió ver el comportamiento de las empresas de tecnología informática durante los
+de 2012 - 2018 años y fue interesante ver através de sus costos e ingresos a muchos proveedores
+conocidos. En mi caso que quiero emprender es importante ver cómo las empresas de consultoría en general van 
+perdiendo sus márgenes y hace pensar en que hay que diversificar y asesorar a las empresas no tanto
+en lo tradicional sino en el desarrollo de aplicaciones J6201 y en lo que la Supersocidades denomina otros
+servicios J6209.  El tipo de industria J6311 sorprende por su bajo margen.  Estos hallazgos merecen mayor
+profundización para el que quiere emprender, invertir o dar créditos.
+
+* El mejor modelo ajustado fue el lmer44
+
+lmer44 <- lmer(costo_ventasn~periodon+(periodon|nit)  +tdes+ balccn-1      ,   data=train4 )
+
+Este modelo compitió con otros cuatro y quedó como el de mínimo AIC, su desempeño en las predicciones
+y en el ajuste fue adecuado.
+
+Puede interpretarse como que el cociente costo/ingreso es una función de la tasa de desempleo, y el 
+balance en cuenta corriente estandarizado (dividido por su valor el primer año) y con efectos aleatorios
+en el periodo estandarizado dado el sujeto nit.
+
+
+* Los modelos de regresión lineal con efectos mixtos , son herramientas poderosas para modelar muestras complejas longitudinales y con repeticiones que para otros modelos sería muy difícles de aprender. Adicionalmente, tienen
+una capacidad muy alta de compresión de información en una sola expresión.
+
+* Se comprobó hasta el cansancio que la estandarización de las variables es determinante para hacer que los métodos
+de regresión converjan, si las variables tienen escalas muy disímiles puede ocurrir que durante la ejecución el método mismo saque error por escala.  Esta estandarización debe armonizar los comportamientos de las variables 
+respetando los signos que les son propios, no sobretransformando para mantener la facilidad de interpretación y
+no introducir varianzas que no existian en los datos originales. Ejemplos de transformaciones útiles son:
+reescalar, normalizar, dividir por un valor de referencia sin cambiar sino, sacar ln, restar algún valor de
+referencia.
+
+*  En este trabajo las transformaciones mas útiles fueron el reescalado de la TRM ,dividir por el primer valor 
+de la serie en el caso del balance de la cuenta corriente y balance fiscal y restarle el primer valor de la serie al tiempo.
+
+*  Los modelos de efectos mixtos generan errores de singularidad y rechazan las variables que son
+colineales, esto se corroboró con la gráfica de correlación de las variables macroeconómicas y con el comportamiento de la variables en los  de modelos.
+
+*  Si bien estos modelos se supone que soportan , muestras pequeñas y desbalanceadas, igual que cualquier otro
+método fallan cuando la escasez de datos es extrema, así al principio cuando se tenían sólo 3 ó 4 datos para entrenar
+todos los modelos fallaban sólo quedaban lo interceptos. Se generaban errores por por valores propios negativos e
+imposibilidad de convergencia.
+
+* El método de regresión lineal por efectos mixtos puede ser afectado por un desbalance extremo en las clases, es así que cuando se tenía la primera muestra que correspondía a todos los individuos de tipo de industria seleccionado y
+habia mas del 80& de nits con un sólo regitro, esto ocasionaba que no hubiera suficientes datos para calcular los efectos , la razón era que por cada individuo hay que multiplicar por 2 ( una pendiente + un intercepto) para hallar el número de efectos y esto factor puede aumentar si hay mas varibles,
+entonces cuando la función determina si se tienen suficientes datos para los efectos puede fallar facilmente
+por número insuficiente de datos.
+
+* La librería nlme es mas rica en información para los modelos porque da el AIC, BIC, t, p, intervalos de 
+confianza , pero su sintáxis para los modelos mixtos es menos clara para interpretar que la lme4.
+
+* Personalmente me sorprendió mucho la versatilidad de las gráficas en R, dominando esas librerías se
+pueden hacer cosas asombrosas con poco código.No he visto en Python nada similar.
+
+* El R markdown facilita mucho la creación del reporte porque se vuelve una actividad paralela al ajuste y
+vaidación del modelo, aunque se corre el riesgo de dejar alguna anotación de una corrida que posteriormente
+cambie.
+
+
+
+
+
+
+
+
+Bibliografía
+
+[1] https://www.banrep.gov.co/es/bie
+https://www.banrep.gov.co/sites/default/files/paginas/bie.pdf
+
+[2] S&P Global Ratings revisa perspectiva de Colombia a negativa por mayores riesgos en liquidez externa, deuda y crecimiento; confirma calificaciones,
+S&P Global, 26 marzo 2020.
+
+[3]https://www.banrep.gov.co/sites/default/files/paginas/bie.pdfhttps://www.banrep.gov.co/es/estadisticas/trm
+
+
+[4]El Balance Fiscal y el Balance en la Cuenta Corriente en Colombia:
+Canales de Transmisión y Causalidad, Ramos F,Jorge y Rincón C., Hernán, Estudios Económicos del Banco de la República.
+
+[5] Philip Leifeld, Universidad de Glasgow, textreg, screenreg
+https://github.com/leifeld/texreg/pull/55/files
+
+[6]https://bookdown.org/yihui/rmarkdown/notebook.html
+
+[7]http://pie.supersociedades.gov.co/Pages/default.aspx#/
+
+[8]https://www.springer.com/gp/book/9781461438991
+
+[9]Vargas Ana, Modelos lineales mixtos con estructura de correlación en el análisis de datos
+longitudinales. Un caso aplicado
+
+[10]https://cran.r-project.org/web/packages/influence.ME/influence.ME.pdf
+
+[11]https://journal.r-project.org/archive/2012-2/RJournal_2012-2_Nieuwenhuis~et~al.pdf
